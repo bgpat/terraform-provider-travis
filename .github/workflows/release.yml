@@ -16,7 +16,6 @@ on:
       - 'v*'
   release:
     types: [released]
-  workflow_dispatch:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
