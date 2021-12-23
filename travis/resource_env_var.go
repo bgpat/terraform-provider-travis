@@ -2,18 +2,20 @@ package travis
 
 import (
 	"context"
-	"errors"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/shuheiktgw/go-travis"
 )
 
 func resourceEnvVar() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceEnvVarCreate,
-		Read:   resourceEnvVarRead,
-		Update: resourceEnvVarUpdate,
-		Delete: resourceEnvVarDelete,
+		Description: "The `travis_env_var` resource can create an environment variable.",
+
+		CreateContext: resourceEnvVarCreate,
+		ReadContext:   resourceEnvVarRead,
+		UpdateContext: resourceEnvVarUpdate,
+		DeleteContext: resourceEnvVarDelete,
 
 		Schema: map[string]*schema.Schema{
 			"repository_id": &schema.Schema{
@@ -60,7 +62,7 @@ func resourceEnvVar() *schema.Resource {
 			},
 		},
 
-		CustomizeDiff: func(d *schema.ResourceDiff, meta interface{}) error {
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 			value := d.Get("value").(string)
 			secure := d.Get("secure_value").(string)
 			switch {
@@ -80,88 +82,97 @@ func resourceEnvVar() *schema.Resource {
 	}
 }
 
-func resourceEnvVarCreate(d *schema.ResourceData, m interface{}) (err error) {
-	client := m.(*Client)
-	var envVar *travis.EnvVar
+func resourceEnvVarCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var (
+		client = m.(*Client)
+		envVar *travis.EnvVar
+		err    error
+	)
 	if repoID := d.Get("repository_id").(int); repoID > 0 {
-		envVar, _, err = client.EnvVars.CreateByRepoId(context.Background(), uint(repoID), generateEnvVarBody(d))
+		envVar, _, err = client.EnvVars.CreateByRepoId(ctx, uint(repoID), generateEnvVarBody(d))
 		if err != nil {
-			return
+			return diag.Errorf("error creating env var by repo ID (%d): %s", repoID, err)
 		}
 	} else if repoSlug := d.Get("repository_slug").(string); repoSlug != "" {
-		envVar, _, err = client.EnvVars.CreateByRepoSlug(context.Background(), repoSlug, generateEnvVarBody(d))
+		envVar, _, err = client.EnvVars.CreateByRepoSlug(ctx, repoSlug, generateEnvVarBody(d))
 		if err != nil {
-			return
+			return diag.Errorf("error creating env var by repo slug (%s): %s", repoSlug, err)
 		}
 	} else {
-		return errors.New("one of repository_id or repository_slug must be specified.")
+		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
 	assignEnvVar(envVar, d)
 	return nil
 }
 
-func resourceEnvVarRead(d *schema.ResourceData, m interface{}) (err error) {
-	client := m.(*Client)
-	var envVar *travis.EnvVar
+func resourceEnvVarRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var (
+		client = m.(*Client)
+		envVar *travis.EnvVar
+		err    error
+	)
 	if repoID := d.Get("repository_id").(int); repoID > 0 {
-		envVar, _, err = client.EnvVars.FindByRepoId(context.Background(), uint(repoID), d.Id())
+		envVar, _, err = client.EnvVars.FindByRepoId(ctx, uint(repoID), d.Id())
 		if err != nil {
 			if IsNotFound(err) {
 				d.SetId("")
 				return nil
 			}
-			return
+			return diag.Errorf("error reading env var by repo ID (%d) and ID (%s): %s", repoID, d.Id(), err)
 		}
 	} else if repoSlug := d.Get("repository_slug").(string); repoSlug != "" {
-		envVar, _, err = client.EnvVars.FindByRepoSlug(context.Background(), repoSlug, d.Id())
+		envVar, _, err = client.EnvVars.FindByRepoSlug(ctx, repoSlug, d.Id())
 		if err != nil {
 			if IsNotFound(err) {
 				d.SetId("")
 				return nil
 			}
-			return
+			return diag.Errorf("error reading env var by repo slug (%s) and ID (%s): %s", repoSlug, d.Id(), err)
 		}
 	} else {
-		return errors.New("one of repository_id or repository_slug must be specified.")
+		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
 	assignEnvVar(envVar, d)
-	return
+	return nil
 }
 
-func resourceEnvVarUpdate(d *schema.ResourceData, m interface{}) (err error) {
-	client := m.(*Client)
-	var envVar *travis.EnvVar
+func resourceEnvVarUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var (
+		client = m.(*Client)
+		envVar *travis.EnvVar
+		err    error
+	)
 	if repoID := d.Get("repository_id").(int); repoID > 0 {
-		envVar, _, err = client.EnvVars.UpdateByRepoId(context.Background(), uint(repoID), d.Id(), generateEnvVarBody(d))
+		envVar, _, err = client.EnvVars.UpdateByRepoId(ctx, uint(repoID), d.Id(), generateEnvVarBody(d))
 		if err != nil {
-			return
+			return diag.Errorf("error updating env var by repo ID (%d) and ID (%s): %s", repoID, d.Id(), err)
 		}
 	} else if repoSlug := d.Get("repository_slug").(string); repoSlug != "" {
-		envVar, _, err = client.EnvVars.UpdateByRepoSlug(context.Background(), repoSlug, d.Id(), generateEnvVarBody(d))
+		envVar, _, err = client.EnvVars.UpdateByRepoSlug(ctx, repoSlug, d.Id(), generateEnvVarBody(d))
 		if err != nil {
-			return
+			return diag.Errorf("error updating env var by repo slug (%s) and ID (%s): %s", repoSlug, d.Id(), err)
 		}
 	} else {
-		return errors.New("one of repository_id or repository_slug must be specified.")
+		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
 	assignEnvVar(envVar, d)
-	return
+	return nil
 }
 
-func resourceEnvVarDelete(d *schema.ResourceData, m interface{}) error {
+func resourceEnvVarDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	if repoID := d.Get("repository_id").(int); repoID > 0 {
-		_, err := client.EnvVars.DeleteByRepoId(context.Background(), uint(repoID), d.Id())
+		_, err := client.EnvVars.DeleteByRepoId(ctx, uint(repoID), d.Id())
 		if err != nil {
-			return err
+			return diag.Errorf("error deleting env var by repo ID (%d) and ID (%s): %s", repoID, d.Id(), err)
 		}
 	} else if repoSlug := d.Get("repository_slug").(string); repoSlug != "" {
-		_, err := client.EnvVars.DeleteByRepoSlug(context.Background(), repoSlug, d.Id())
+		_, err := client.EnvVars.DeleteByRepoSlug(ctx, repoSlug, d.Id())
 		if err != nil {
-			return err
+			return diag.Errorf("error deleting env var by repo slug (%s) and ID (%s): %s", repoSlug, d.Id(), err)
 		}
 	} else {
-		return errors.New("one of repository_id or repository_slug must be specified.")
+		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
 	d.SetId("")
 	return nil
