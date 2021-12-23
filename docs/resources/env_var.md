@@ -20,7 +20,7 @@ resource "travis_env_var" "public_value" {
 }
 
 resource "travis_env_var" "secret_values" {
-  for_each        = set("foo", "bar", "buzz")
+  for_each        = toset(["foo", "bar", "buzz"])
   repository_slug = "bgpat/test"
   name            = "SECRET_VALUE_${upper(each.key)}"
   value           = each.value
