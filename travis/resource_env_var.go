@@ -14,7 +14,6 @@ func resourceEnvVar() *schema.Resource {
 
 		CreateContext: resourceEnvVarCreate,
 		ReadContext:   resourceEnvVarRead,
-		UpdateContext: resourceEnvVarUpdate,
 		DeleteContext: resourceEnvVarDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -36,12 +35,14 @@ func resourceEnvVar() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The environment variable name, e.g. FOO.",
+				ForceNew:    true,
 			},
 			"public_value": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The environment variable's value, e.g. bar.",
 				ExactlyOneOf: []string{"value"},
+				ForceNew:     true,
 			},
 			"value": &schema.Schema{
 				Type:         schema.TypeString,
@@ -49,16 +50,19 @@ func resourceEnvVar() *schema.Resource {
 				Description:  "The environment variable's value, e.g. bar.",
 				Sensitive:    true,
 				ExactlyOneOf: []string{"public_value"},
+				ForceNew:     true,
 			},
 			"public": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "Whether this environment variable should be publicly visible or not.",
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"branch": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The env_var's branch.",
+				ForceNew:    true,
 			},
 		},
 
@@ -136,29 +140,6 @@ func resourceEnvVarRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceEnvVarUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var (
-		client = m.(*Client)
-		envVar *travis.EnvVar
-		err    error
-	)
-	if repoID := d.Get("repository_id").(int); repoID > 0 {
-		envVar, _, err = client.EnvVars.UpdateByRepoId(ctx, uint(repoID), d.Id(), generateEnvVarBody(d))
-		if err != nil {
-			return diag.Errorf("error updating env var by repo ID (%d) and ID (%s): %s", repoID, d.Id(), err)
-		}
-	} else if repoSlug := d.Get("repository_slug").(string); repoSlug != "" {
-		envVar, _, err = client.EnvVars.UpdateByRepoSlug(ctx, repoSlug, d.Id(), generateEnvVarBody(d))
-		if err != nil {
-			return diag.Errorf("error updating env var by repo slug (%s) and ID (%s): %s", repoSlug, d.Id(), err)
-		}
-	} else {
-		return diag.Errorf("one of repository_id or repository_slug must be specified")
-	}
-	assignEnvVar(envVar, d)
-	return nil
-}
-
 func resourceEnvVarDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	if repoID := d.Get("repository_id").(int); repoID > 0 {
@@ -200,7 +181,6 @@ func assignEnvVar(envVar *travis.EnvVar, d *schema.ResourceData) {
 		d.Set("value", nil)
 	} else {
 		d.Set("public_value", nil)
-		d.Set("value", envVar.Value)
 	}
 	d.Set("public", envVar.Public)
 	d.Set("branch", envVar.Branch)
