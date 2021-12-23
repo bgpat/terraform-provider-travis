@@ -262,6 +262,8 @@ github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNX
 github.com/sergi/go-diff v1.2.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
 github.com/shuheiktgw/go-travis v0.2.4 h1:IAnh/Dyv7ql87qtJWUcvR5MM8e5iCDGoENl9VzpxAHc=
 github.com/shuheiktgw/go-travis v0.2.4/go.mod h1:RtODX49bvgHTvfzFvGEPFtU0dKVk0D3PyvUQR/63hT0=
+github.com/shuheiktgw/go-travis v0.3.1 h1:SAT16mi77ccqogOslnXxBXzXbpeyChaIYUwi2aJpVZY=
+github.com/shuheiktgw/go-travis v0.3.1/go.mod h1:avnFFDqJDdRHwlF9tgqvYi3asQCm/HGL8aLxYiKa4Yg=
 github.com/sirupsen/logrus v1.4.1/go.mod h1:ni0Sbl8bgC9z8RoU9G6nDWqqs/fq4eDPysMBDgk/93Q=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
