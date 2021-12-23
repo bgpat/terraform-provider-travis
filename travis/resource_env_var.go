@@ -37,18 +37,18 @@ func resourceEnvVar() *schema.Resource {
 				Required:    true,
 				Description: "The environment variable name, e.g. FOO.",
 			},
+			"public_value": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The environment variable's value, e.g. bar.",
+				ExactlyOneOf: []string{"value"},
+			},
 			"value": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The environment variable's value, e.g. bar.",
-				ExactlyOneOf: []string{"secure_value"},
-			},
-			"secure_value": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "The environment variable's value, e.g. bar.",
 				Sensitive:    true,
-				ExactlyOneOf: []string{"value"},
+				ExactlyOneOf: []string{"public_value"},
 			},
 			"public": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -63,19 +63,19 @@ func resourceEnvVar() *schema.Resource {
 		},
 
 		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+			publicValue := d.Get("public_value").(string)
 			value := d.Get("value").(string)
-			secure := d.Get("secure_value").(string)
 			switch {
-			case value != "" && secure == "": // public: true
+			case publicValue != "" && value == "": // public: true
 				d.SetNew("public", true)
-				d.SetNew("secure_value", "")
-			case secure != "" && value == "": // public: false
+				d.SetNew("value", "")
+			case publicValue != "" && value == "": // public: false
 				d.SetNew("public", false)
 				d.SetNew("value", "")
-			case value == "" && secure == "": // If both value and secure_value are empty, public is true
+			case publicValue == "" && value == "": // If both public_value and value are empty, public is true
 				d.SetNew("public", true)
+				d.SetNew("public_value", "")
 				d.ForceNew("value")
-				d.SetNew("secure_value", "")
 			}
 			return nil
 		},
@@ -181,8 +181,8 @@ func resourceEnvVarDelete(ctx context.Context, d *schema.ResourceData, m interfa
 func generateEnvVarBody(d *schema.ResourceData) *travis.EnvVarBody {
 	public := d.Get("public").(bool)
 	value := d.Get("value").(string)
-	if !public {
-		value = d.Get("secure_value").(string)
+	if public {
+		value = d.Get("public_value").(string)
 	}
 	return &travis.EnvVarBody{
 		Name:   d.Get("name").(string),
@@ -196,10 +196,11 @@ func assignEnvVar(envVar *travis.EnvVar, d *schema.ResourceData) {
 	d.SetId(*envVar.Id)
 	d.Set("name", envVar.Name)
 	if *envVar.Public {
-		d.Set("value", envVar.Value)
-		d.Set("secure_value", nil)
-	} else {
+		d.Set("public_value", envVar.Value)
 		d.Set("value", nil)
+	} else {
+		d.Set("public_value", nil)
+		d.Set("value", envVar.Value)
 	}
 	d.Set("public", envVar.Public)
 	d.Set("branch", envVar.Branch)

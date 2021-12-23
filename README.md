@@ -14,16 +14,18 @@ provider "travis" {
   token = var.travis_api_token
 }
 
+// secret env var
 resource "travis_env_var" "foo" {
   repository_slug = "bgpat/test"
   name            = "FOO"
   value           = "foo"
 }
 
+// public env var
 resource "travis_env_var" "bar" {
   repository_slug = "bgpat/test"
   name            = "BAR"
-  secure_value    = "foo"
+  public_value    = "foo"
 }
 ```
 
