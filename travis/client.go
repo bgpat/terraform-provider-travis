@@ -7,10 +7,12 @@ import (
 	"github.com/shuheiktgw/go-travis"
 )
 
+// Client is an API client for Travis CI.
 type Client struct {
 	*travis.Client
 }
 
+// NewClient returns an API client object.
 func NewClient(url, token string) *Client {
 	client := &Client{
 		Client: travis.NewClient(url, token),
