@@ -12,9 +12,14 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"api_base_url": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     travis.ApiComUrl,
+				Type:     schema.TypeString,
+				Optional: true,
+				DefaultFunc: func() (interface{}, error) {
+					if val, ok := os.LookupEnv("TRAVIS_API_BASE_URL"); ok {
+						return val, nil
+					}
+					return travis.ApiComUrl, nil
+				},
 				Description: "the base URL for API request",
 			},
 			"token": {
@@ -25,7 +30,8 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"travis_env_var": resourceEnvVar(),
+			"travis_env_var":  resourceEnvVar(),
+			"travis_key_pair": resourceKeyPair(),
 		},
 		ConfigureFunc: func(d *schema.ResourceData) (interface{}, error) {
 			return NewClient(
