@@ -33,3 +33,8 @@ func (r *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 	return r.base.RoundTrip(req)
 }
+
+func isNotFound(err error) bool {
+	errResp, ok := err.(*travis.ErrorResponse)
+	return ok && errResp.ErrorType == "not_found"
+}
