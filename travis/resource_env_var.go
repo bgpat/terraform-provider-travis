@@ -118,7 +118,7 @@ func resourceEnvVarRead(ctx context.Context, d *schema.ResourceData, m interface
 	if repoID := d.Get("repository_id").(int); repoID > 0 {
 		envVar, _, err = client.EnvVars.FindByRepoId(ctx, uint(repoID), d.Id())
 		if err != nil {
-			if IsNotFound(err) {
+			if isNotFound(err) {
 				d.SetId("")
 				return nil
 			}
@@ -127,7 +127,7 @@ func resourceEnvVarRead(ctx context.Context, d *schema.ResourceData, m interface
 	} else if repoSlug := d.Get("repository_slug").(string); repoSlug != "" {
 		envVar, _, err = client.EnvVars.FindByRepoSlug(ctx, repoSlug, d.Id())
 		if err != nil {
-			if IsNotFound(err) {
+			if isNotFound(err) {
 				d.SetId("")
 				return nil
 			}
