@@ -2,6 +2,9 @@ package travis
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -82,6 +85,10 @@ func resourceEnvVar() *schema.Resource {
 				d.ForceNew("value")
 			}
 			return nil
+		},
+
+		Importer: &schema.ResourceImporter{
+			StateContext: importEnvVar,
 		},
 	}
 }
@@ -184,4 +191,33 @@ func assignEnvVar(envVar *travis.EnvVar, d *schema.ResourceData) {
 	}
 	d.Set("public", envVar.Public)
 	d.Set("branch", envVar.Branch)
+}
+
+func importEnvVar(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	client := m.(*Client)
+
+	args := strings.Split(d.Id(), "/")
+	if len(args) <= 1 {
+		return nil, fmt.Errorf("expected format is \"<repository>/<name>\", but got invalid: %q", d.Id())
+	}
+	repo := strings.Join(args[:len(args)-1], "/")
+	name := args[len(args)-1]
+
+	envVars, _, err := client.EnvVars.ListByRepoSlug(ctx, repo)
+	if err != nil {
+		return nil, fmt.Errorf("error listing env vars of repo (%q): %w", repo, err)
+	}
+
+	for _, envVar := range envVars {
+		if *envVar.Name == name {
+			assignEnvVar(envVar, d)
+			if repoID, err := strconv.Atoi(repo); err == nil {
+				d.Set("repository_id", repoID)
+			} else {
+				d.Set("repository_slug", repo)
+			}
+			return []*schema.ResourceData{d}, nil
+		}
+	}
+	return nil, fmt.Errorf("not found env var %q from repo %q", name, repo)
 }
