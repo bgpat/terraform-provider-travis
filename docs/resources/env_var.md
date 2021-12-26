@@ -20,10 +20,10 @@ resource "travis_env_var" "public_value" {
 }
 
 resource "travis_env_var" "secret_values" {
-  for_each        = toset(["foo", "bar", "buzz"])
-  repository_slug = "bgpat/test"
-  name            = "SECRET_VALUE_${upper(each.key)}"
-  value           = each.value
+  for_each      = toset(["foo", "bar", "buzz"])
+  repository_id = 2562785
+  name          = "SECRET_VALUE_${upper(each.key)}"
+  value         = each.value
 }
 ```
 
@@ -47,4 +47,14 @@ resource "travis_env_var" "secret_values" {
 
 - **public** (Boolean) Whether this environment variable should be publicly visible or not.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# ${repository_id}/${name}
+terraform import travis_env_var.public_value bgpat/test/PUBLIC_VALUE
+
+# ${repository_slug}/${name}
+terraform import 'travis_env_var.secret_values["foo"]' 2562785/SECRET_VALUE_FOO
+```
