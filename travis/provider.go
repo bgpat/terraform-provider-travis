@@ -26,6 +26,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"travis_env_var": resourceEnvVar(),
+			"travis_cron":    resourceCron(),
 		},
 		ConfigureFunc: func(d *schema.ResourceData) (interface{}, error) {
 			return NewClient(
