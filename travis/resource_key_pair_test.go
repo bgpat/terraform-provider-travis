@@ -78,7 +78,7 @@ func testAccCheckKeyPairResourceExists(resourceName string, keyPair *travis.KeyP
 	}
 }
 
-func testAccKeyPairResource(desc string, testAccPrivateKey string) string {
+func testAccKeyPairResource(desc, testAccPrivateKey string) string {
 	return fmt.Sprintf(`
 resource "travis_key_pair" "foo" {
 	repository_slug = %q
