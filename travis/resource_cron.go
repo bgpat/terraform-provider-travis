@@ -14,7 +14,7 @@ import (
 
 func resourceCron() *schema.Resource {
 	return &schema.Resource{
-		Description: "The `travis_cron_job` resource creates a cron job for a branch.",
+		Description: "The `travis_cron` resource creates a cron job for a branch.",
 
 		CreateContext: resourceCronCreate,
 		ReadContext:   resourceCronRead,
@@ -43,7 +43,7 @@ func resourceCron() *schema.Resource {
 			},
 			"interval": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				Description:  "Interval at which this cron runs. Can be daily, weekly, or monthly.",
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"daily", "weekly", "monthly"}, false),
