@@ -75,14 +75,10 @@ func resourceEnvVar() *schema.Resource {
 			switch {
 			case publicValue != "" && value == "": // public: true
 				d.SetNew("public", true)
-				d.SetNew("value", "")
-			case publicValue != "" && value == "": // public: false
+				d.Clear("value")
+			case value != "" && publicValue == "": // public: false
 				d.SetNew("public", false)
-				d.SetNew("value", "")
-			case publicValue == "" && value == "": // If both public_value and value are empty, public is true
-				d.SetNew("public", true)
-				d.SetNew("public_value", "")
-				d.ForceNew("value")
+				d.Clear("public_value")
 			}
 			return nil
 		},
@@ -168,10 +164,16 @@ func resourceEnvVarDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 func generateEnvVarBody(d *schema.ResourceData) *travis.EnvVarBody {
 	public := d.Get("public").(bool)
+
 	value := d.Get("value").(string)
 	if public {
 		value = d.Get("public_value").(string)
 	}
+
+	if value == "" {
+		public = true
+	}
+
 	return &travis.EnvVarBody{
 		Name:   d.Get("name").(string),
 		Value:  value,
