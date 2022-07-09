@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -11,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/shuheiktgw/go-travis"
 )
+
+var uuidPattern = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 
 func TestAccResourceEnvVar_basic(t *testing.T) {
 	var envVar travis.EnvVar
@@ -30,6 +33,13 @@ func TestAccResourceEnvVar_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("travis_env_var.foo", "value", "secret"),
 					resource.TestCheckResourceAttr("travis_env_var.foo", "public_value", ""),
 					resource.TestCheckResourceAttr("travis_env_var.foo", "public", "false"),
+
+					testAccCheckEnvVarResourceExists("travis_env_var.bar", &envVar),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "repository_slug", testRepoSlug),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "name", rName+"_computed"),
+					resource.TestMatchResourceAttr("travis_env_var.bar", "value", uuidPattern),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "public_value", ""),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "public", "false"),
 				),
 			},
 			{
@@ -39,6 +49,24 @@ func TestAccResourceEnvVar_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("travis_env_var.foo", "repository_slug", testRepoSlug),
 					resource.TestCheckResourceAttr("travis_env_var.foo", "name", rName),
 					resource.TestCheckResourceAttr("travis_env_var.foo", "public_value", "public"),
+					resource.TestCheckResourceAttr("travis_env_var.foo", "value", ""),
+					resource.TestCheckResourceAttr("travis_env_var.foo", "public", "true"),
+
+					testAccCheckEnvVarResourceExists("travis_env_var.bar", &envVar),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "repository_slug", testRepoSlug),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "name", rName+"_computed"),
+					resource.TestMatchResourceAttr("travis_env_var.bar", "public_value", uuidPattern),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "value", ""),
+					resource.TestCheckResourceAttr("travis_env_var.bar", "public", "true"),
+				),
+			},
+			{
+				Config: testAccEmptyEnvVarResource(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvVarResourceExists("travis_env_var.foo", &envVar),
+					resource.TestCheckResourceAttr("travis_env_var.foo", "repository_slug", testRepoSlug),
+					resource.TestCheckResourceAttr("travis_env_var.foo", "name", rName),
+					resource.TestCheckResourceAttr("travis_env_var.foo", "public_value", ""),
 					resource.TestCheckResourceAttr("travis_env_var.foo", "value", ""),
 					resource.TestCheckResourceAttr("travis_env_var.foo", "public", "true"),
 				),
@@ -101,7 +129,13 @@ resource "travis_env_var" "foo" {
 	name            = %q
 	value           = "secret"
 }
-`, testRepoSlug, name)
+
+resource "travis_env_var" "bar" {
+	repository_slug = %q
+	name            = %q
+	value           = travis_env_var.foo.id
+}
+`, testRepoSlug, name, testRepoSlug, name+"_computed")
 }
 
 func testAccPublicEnvVarResource(name string) string {
@@ -110,6 +144,22 @@ resource "travis_env_var" "foo" {
 	repository_slug = %q
 	name            = %q
 	public_value    = "public"
+}
+
+resource "travis_env_var" "bar" {
+	repository_slug = %q
+	name            = %q
+	public_value    = travis_env_var.foo.id
+}
+`, testRepoSlug, name, testRepoSlug, name+"_computed")
+}
+
+func testAccEmptyEnvVarResource(name string) string {
+	return fmt.Sprintf(`
+resource "travis_env_var" "foo" {
+	repository_slug = %q
+	name            = %q
+	value           = ""
 }
 `, testRepoSlug, name)
 }
