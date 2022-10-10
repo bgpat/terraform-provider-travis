@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.20.0
 	github.com/shuheiktgw/go-travis v0.3.1
-	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
+	golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
 )
 
 require (
