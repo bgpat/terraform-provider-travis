@@ -92,8 +92,8 @@ func resourceCronCreate(ctx context.Context, d *schema.ResourceData, m interface
 		cron   *travis.Cron
 		err    error
 	)
-	if repoID, ok := d.GetOk("repository_id"); ok {
-		cron, _, err = client.Crons.CreateByRepoId(ctx, repoID.(uint), d.Get("branch").(string), generateCronBody(d))
+	if repoID := d.Get("repository_id").(int); repoID > 0 {
+		cron, _, err = client.Crons.CreateByRepoId(ctx, uint(repoID), d.Get("branch").(string), generateCronBody(d))
 		if err != nil {
 			return diag.Errorf("error creating cron by repo ID (%d): %s", repoID, err)
 		}
@@ -115,8 +115,8 @@ func resourceCronRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		cron   *travis.Cron
 		err    error
 	)
-	if repoID, ok := d.GetOk("repository_id"); ok {
-		cron, _, err = client.Crons.FindByRepoId(ctx, repoID.(uint), d.Get("branch").(string), nil)
+	if repoID := d.Get("repository_id").(int); repoID > 0 {
+		cron, _, err = client.Crons.FindByRepoId(ctx, uint(repoID), d.Get("branch").(string), nil)
 		if err != nil {
 			if isNotFound(err) {
 				d.SetId("")
@@ -183,13 +183,22 @@ func importCron(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*
 	repo := strings.Join(args[:len(args)-1], "/")
 	branch := args[len(args)-1]
 
-	cron, _, err := client.Crons.FindByRepoSlug(ctx, repo, branch, nil)
-	if err != nil {
-		return nil, fmt.Errorf("error getting cron in branch (%q) of repo (%q): %w", branch, repo, err)
+	var cron *travis.Cron
+	if repoID, err := strconv.Atoi(repo); err == nil {
+		cron, _, err = client.Crons.FindByRepoId(ctx, uint(repoID), branch, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error getting cron in branch (%q) of repo id (%d): %w", branch, repoID, err)
+		}
+		d.Set("repository_id", repoID)
+	} else {
+		cron, _, err = client.Crons.FindByRepoSlug(ctx, repo, branch, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error getting cron in branch (%q) of repo slug (%q): %w", branch, repo, err)
+		}
+		d.Set("repository_slug", repo)
 	}
 
 	assignCron(cron, d)
-	d.Set("repository_slug", repo)
 
 	return []*schema.ResourceData{d}, nil
 }
