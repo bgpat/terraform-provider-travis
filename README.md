@@ -1,8 +1,6 @@
 # Terraform Provider for Travis CI
 
-![release](https://github.com/bgpat/terraform-provider-travis/workflows/release/badge.svg)
-
-https://registry.terraform.io/providers/bgpat/travis/latest
+[![release](https://github.com/bgpat/terraform-provider-travis/workflows/release/badge.svg)](https://registry.terraform.io/providers/bgpat/travis/latest)
 
 ## Example
 
