@@ -17,18 +17,18 @@ The `travis_key_pair` resource manages an RSA key pair for a repo.
 
 ### Required
 
-- **description** (String) A text description of this key pair.
-- **value** (String, Sensitive) The private key
+- `description` (String) A text description of this key pair.
+- `value` (String, Sensitive) The private key
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **repository_id** (Number) Value uniquely identifying the repository.
-- **repository_slug** (String) Same as {repository.owner.name}/{repository.name}.
+- `repository_id` (Number) Value uniquely identifying the repository.
+- `repository_slug` (String) Same as {repository.owner.name}/{repository.name}.
 
 ### Read-Only
 
-- **fingerprint** (String) Fingerprint of the RSA key
-- **public_key** (String) The public key.
+- `fingerprint` (String) Fingerprint of the RSA key
+- `id` (String) The ID of this resource.
+- `public_key` (String) The public key.
 
 
