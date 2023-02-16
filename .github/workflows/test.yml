@@ -21,3 +21,4 @@ jobs:
           TF_ACC: "true"
           TRAVIS_TOKEN: ${{ secrets.TRAVIS_TOKEN }}
           TRAVIS_REPO_SLUG: ${{ secrets.TRAVIS_REPO_SLUG }}
+          TRAVIS_BRANCH: ${{ secrets.TRAVIS_BRANCH }}

@@ -3,8 +3,6 @@ package travis
 import (
 	"context"
 	"fmt"
-	"os"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -12,8 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/shuheiktgw/go-travis"
 )
-
-var uuidPattern = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 
 func TestAccResourceEnvVar_basic(t *testing.T) {
 	var envVar travis.EnvVar
@@ -73,15 +69,6 @@ func TestAccResourceEnvVar_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("TRAVIS_TOKEN"); v == "" {
-		t.Fatal("TRAVIS_TOKEN must be set for acceptance tests")
-	}
-	if v := os.Getenv("TRAVIS_REPO_SLUG"); v == "" {
-		t.Fatal("TRAVIS_REPO_SLUG must be set for acceptance tests")
-	}
 }
 
 func testAccCheckEnvVarResourceDestroy(s *terraform.State) error {
