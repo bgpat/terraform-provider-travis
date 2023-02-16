@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/shuheiktgw/go-travis"
@@ -14,7 +13,6 @@ import (
 
 func TestAccResourceCron_basic(t *testing.T) {
 	var cron travis.Cron
-	randomBranch := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -22,41 +20,41 @@ func TestAccResourceCron_basic(t *testing.T) {
 		CheckDestroy: testAccCheckCronResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCronResource(randomBranch, "daily", false),
+				Config: testAccCronResource(testBranch, "daily", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCronResourceExists("travis_cron.foo", &cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
-					resource.TestCheckResourceAttr("travis_cron.foo", "branch", randomBranch),
+					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "daily"),
 					resource.TestCheckResourceAttr("travis_cron.foo", "dont_run_if_recent_build_exists", "false"),
 				),
 			},
 			{
-				Config: testAccCronResource(randomBranch, "weekly", false),
+				Config: testAccCronResource(testBranch, "weekly", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCronResourceExists("travis_cron.foo", &cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
-					resource.TestCheckResourceAttr("travis_cron.foo", "branch", randomBranch),
+					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "weekly"),
 					resource.TestCheckResourceAttr("travis_cron.foo", "dont_run_if_recent_build_exists", "false"),
 				),
 			},
 			{
-				Config: testAccCronResource(randomBranch, "monthly", false),
+				Config: testAccCronResource(testBranch, "monthly", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCronResourceExists("travis_cron.foo", &cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
-					resource.TestCheckResourceAttr("travis_cron.foo", "branch", randomBranch),
+					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "monthly"),
 					resource.TestCheckResourceAttr("travis_cron.foo", "dont_run_if_recent_build_exists", "false"),
 				),
 			},
 			{
-				Config: testAccCronResource(randomBranch, "daily", true),
+				Config: testAccCronResource(testBranch, "daily", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCronResourceExists("travis_cron.foo", &cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
-					resource.TestCheckResourceAttr("travis_cron.foo", "branch", randomBranch),
+					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "daily"),
 					resource.TestCheckResourceAttr("travis_cron.foo", "dont_run_if_recent_build_exists", "true"),
 				),
