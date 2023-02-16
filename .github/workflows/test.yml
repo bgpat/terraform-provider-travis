@@ -1,11 +1,6 @@
 name: test
 on:
   push:
-    paths:
-      - '**.go'
-      - '.github/workflows/**'
-      - go.mod
-      - go.sum
 
 jobs:
   test:
