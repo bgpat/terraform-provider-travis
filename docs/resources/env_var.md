@@ -32,20 +32,20 @@ resource "travis_env_var" "secret_values" {
 
 ### Required
 
-- **name** (String) The environment variable name, e.g. FOO.
+- `name` (String) The environment variable name, e.g. FOO.
 
 ### Optional
 
-- **branch** (String) The env_var's branch.
-- **id** (String) The ID of this resource.
-- **public_value** (String) The environment variable's value, e.g. bar.
-- **repository_id** (Number) Value uniquely identifying the repository.
-- **repository_slug** (String) Same as {repository.owner.name}/{repository.name}.
-- **value** (String, Sensitive) The environment variable's value, e.g. bar.
+- `branch` (String) The env_var's branch.
+- `public_value` (String) The environment variable's value, e.g. bar.
+- `repository_id` (Number) Value uniquely identifying the repository.
+- `repository_slug` (String) Same as {repository.owner.name}/{repository.name}.
+- `value` (String, Sensitive) The environment variable's value, e.g. bar.
 
 ### Read-Only
 
-- **public** (Boolean) Whether this environment variable should be publicly visible or not.
+- `id` (String) The ID of this resource.
+- `public` (Boolean) Whether this environment variable should be publicly visible or not.
 
 ## Import
 
