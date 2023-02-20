@@ -27,6 +27,9 @@ func Provider() *schema.Provider {
 			"travis_key_pair": resourceKeyPair(),
 			"travis_cron":     resourceCron(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"travis_user": dataSourceUser(),
+		},
 		ConfigureFunc: func(d *schema.ResourceData) (interface{}, error) {
 			return NewClient(
 				d.Get("api_base_url").(string),
