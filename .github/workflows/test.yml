@@ -15,5 +15,8 @@ jobs:
         env:
           TF_ACC: "true"
           TRAVIS_TOKEN: ${{ secrets.TRAVIS_TOKEN }}
-          TRAVIS_REPO_SLUG: ${{ secrets.TRAVIS_REPO_SLUG }}
-          TRAVIS_BRANCH: ${{ secrets.TRAVIS_BRANCH }}
+          TRAVIS_BRANCH: ${{ vars.TRAVIS_BRANCH }}
+          TRAVIS_REPO_ID: ${{ vars.TRAVIS_REPO_ID }}
+          TRAVIS_REPO_SLUG: ${{ vars.TRAVIS_REPO_SLUG }}
+          TRAVIS_USER_ID: ${{ vars.TRAVIS_USER_ID }}
+          TRAVIS_USER_LOGIN: ${{ vars.TRAVIS_USER_LOGIN }}

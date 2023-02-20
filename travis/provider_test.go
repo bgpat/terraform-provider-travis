@@ -12,8 +12,10 @@ var (
 	testAccProviders map[string]*schema.Provider
 	testAccProvider  *schema.Provider
 
-	testRepoSlug = os.Getenv("TRAVIS_REPO_SLUG")
-	testBranch   = os.Getenv("TRAVIS_BRANCH")
+	testRepoSlug  = os.Getenv("TRAVIS_REPO_SLUG")
+	testBranch    = os.Getenv("TRAVIS_BRANCH")
+	testUserID    = os.Getenv("TRAVIS_USER_ID")
+	testUserLogin = os.Getenv("TRAVIS_USER_LOGIN")
 
 	uuidPattern = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 )
@@ -44,5 +46,11 @@ func testAccPreCheck(t *testing.T) {
 	}
 	if testBranch == "" {
 		t.Fatal("TRAVIS_BRANCH must be set for acceptance tests")
+	}
+	if testUserID == "" {
+		t.Fatal("TRAVIS_USER_ID must be set for acceptance tests")
+	}
+	if testUserLogin == "" {
+		t.Fatal("TRAVIS_USER_LOGIN must be set for acceptance tests")
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/shuheiktgw/go-travis"
 )
 
@@ -31,6 +32,10 @@ func (r *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		r.mu.Lock()
 		defer r.mu.Unlock()
 	}
+	tflog.Debug(req.Context(), "request travis API", map[string]interface{}{
+		"method": req.Method,
+		"url":    req.URL.String(),
+	})
 	return r.base.RoundTrip(req)
 }
 
