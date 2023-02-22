@@ -1,4 +1,4 @@
-package travis
+package travis_test
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/shuheiktgw/go-travis"
+
+	tptravis "github.com/bgpat/terraform-provider-travis/travis"
 )
 
 func TestAccResourceEnvVar_basic(t *testing.T) {
@@ -72,7 +74,7 @@ func TestAccResourceEnvVar_basic(t *testing.T) {
 }
 
 func testAccCheckEnvVarResourceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
+	client := testAccProvider.Meta().(*travis.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "travis_env_var" {
 			continue
@@ -82,7 +84,7 @@ func testAccCheckEnvVarResourceDestroy(s *terraform.State) error {
 		if err == nil && envVar != nil {
 			return fmt.Errorf("env var %q still exists", rs.Primary.Attributes["name"])
 		}
-		if err != nil && !isNotFound(err) {
+		if err != nil && !tptravis.IsNotFound(err) {
 			return err
 		}
 		return nil
@@ -99,7 +101,7 @@ func testAccCheckEnvVarResourceExists(resourceName string, envVar *travis.EnvVar
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("env var ID is not set")
 		}
-		client := testAccProvider.Meta().(*Client)
+		client := testAccProvider.Meta().(*travis.Client)
 		result, _, err := client.EnvVars.FindByRepoSlug(context.Background(), testRepoSlug, rs.Primary.ID)
 		if err != nil {
 			return err

@@ -1,6 +1,7 @@
 package travis
 
 import (
+	"errors"
 	"net/http"
 	"sync"
 
@@ -40,6 +41,6 @@ func (r *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func isNotFound(err error) bool {
-	errResp, ok := err.(*travis.ErrorResponse)
-	return ok && errResp.ErrorType == "not_found"
+	var errResp *travis.ErrorResponse
+	return errors.As(err, &errResp) && errResp.ErrorType == "not_found"
 }

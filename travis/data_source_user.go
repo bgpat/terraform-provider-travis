@@ -148,7 +148,7 @@ func dataSourceTravisRead(ctx context.Context, d *schema.ResourceData, m interfa
 	ctx = tflog.SetField(ctx, "userID", userID)
 
 	if waitSync {
-		_, _, err := client.User.Sync(ctx, uint(userID))
+		_, _, err := client.User.Sync(ctx, userID)
 		if err != nil {
 			return diag.Errorf("failed to sync user %v: %v", userID, err)
 		}

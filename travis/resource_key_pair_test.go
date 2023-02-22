@@ -1,4 +1,4 @@
-package travis
+package travis_test
 
 import (
 	"context"
@@ -14,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/shuheiktgw/go-travis"
 	"golang.org/x/crypto/ssh"
+
+	tptravis "github.com/bgpat/terraform-provider-travis/travis"
 )
 
 func TestAccResourceKeyPair_basic(t *testing.T) {
@@ -41,7 +43,7 @@ func TestAccResourceKeyPair_basic(t *testing.T) {
 }
 
 func testAccCheckKeyPairResourceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
+	client := testAccProvider.Meta().(*tptravis.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "travis_key_pair" {
 			continue
@@ -51,7 +53,7 @@ func testAccCheckKeyPairResourceDestroy(s *terraform.State) error {
 		if err == nil && keyPair != nil {
 			return fmt.Errorf("key pair %q still exists", slug)
 		}
-		if err != nil && !isNotFound(err) {
+		if err != nil && !tptravis.IsNotFound(err) {
 			return err
 		}
 		return nil
@@ -68,7 +70,7 @@ func testAccCheckKeyPairResourceExists(resourceName string, keyPair *travis.KeyP
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("key pair is not set")
 		}
-		client := testAccProvider.Meta().(*Client)
+		client := testAccProvider.Meta().(*tptravis.Client)
 		result, _, err := client.KeyPair.FindByRepoSlug(context.Background(), testRepoSlug)
 		if err != nil {
 			return err
@@ -89,9 +91,11 @@ resource "travis_key_pair" "foo" {
 }
 
 func makeKeyPair(t *testing.T) (string, string, string) {
+	t.Helper()
+
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		t.Fatal(fmt.Errorf("Cannot generate RSA key\n"))
+		t.Fatal("Cannot generate RSA key")
 	}
 	publicKey := &privateKey.PublicKey
 	sshPublicKey, err := ssh.NewPublicKey(publicKey)

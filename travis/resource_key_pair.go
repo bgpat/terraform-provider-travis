@@ -75,7 +75,9 @@ func resourceKeyPairCreate(ctx context.Context, d *schema.ResourceData, m interf
 	} else {
 		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
-	assignKeyPair(keyPair, d)
+	if err := assignKeyPair(keyPair, d); err != nil {
+		return diag.Errorf("failed to assign key_pair: %v", err)
+	}
 	return nil
 }
 
@@ -106,7 +108,9 @@ func resourceKeyPairRead(ctx context.Context, d *schema.ResourceData, m interfac
 	} else {
 		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
-	assignKeyPair(keyPair, d)
+	if err := assignKeyPair(keyPair, d); err != nil {
+		return diag.Errorf("failed to assign key_pair: %v", err)
+	}
 	return nil
 }
 
@@ -168,12 +172,17 @@ func generateKeyPairBody(d *schema.ResourceData) *travis.KeyPairBody {
 	}
 }
 
-func assignKeyPair(keyPair *travis.KeyPair, d *schema.ResourceData) {
+func assignKeyPair(keyPair *travis.KeyPair, d *schema.ResourceData) error {
 	if val, ok := d.GetOk("repository_id"); ok {
 		d.SetId(val.(string))
 	} else if val, ok := d.GetOk("repository_slug"); ok {
 		d.SetId(val.(string))
 	}
-	d.Set("public_key", keyPair.PublicKey)
-	d.Set("fingerprint", keyPair.Fingerprint)
+	if err := d.Set("public_key", keyPair.PublicKey); err != nil {
+		return err
+	}
+	if err := d.Set("fingerprint", keyPair.Fingerprint); err != nil {
+		return err
+	}
+	return nil
 }
