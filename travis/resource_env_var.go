@@ -20,34 +20,34 @@ func resourceEnvVar() *schema.Resource {
 		DeleteContext: resourceEnvVarDelete,
 
 		Schema: map[string]*schema.Schema{
-			"repository_id": &schema.Schema{
+			"repository_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Description:  "Value uniquely identifying the repository.",
 				ForceNew:     true,
 				ExactlyOneOf: []string{"repository_slug"},
 			},
-			"repository_slug": &schema.Schema{
+			"repository_slug": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Same as {repository.owner.name}/{repository.name}.",
 				ForceNew:     true,
 				ExactlyOneOf: []string{"repository_id"},
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The environment variable name, e.g. FOO.",
 				ForceNew:    true,
 			},
-			"public_value": &schema.Schema{
+			"public_value": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The environment variable's value, e.g. bar.",
 				ExactlyOneOf: []string{"value"},
 				ForceNew:     true,
 			},
-			"value": &schema.Schema{
+			"value": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The environment variable's value, e.g. bar.",
@@ -55,13 +55,13 @@ func resourceEnvVar() *schema.Resource {
 				ExactlyOneOf: []string{"public_value"},
 				ForceNew:     true,
 			},
-			"public": &schema.Schema{
+			"public": {
 				Type:        schema.TypeBool,
 				Description: "Whether this environment variable should be publicly visible or not.",
 				Computed:    true,
 				ForceNew:    true,
 			},
-			"branch": &schema.Schema{
+			"branch": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The env_var's branch.",
@@ -74,11 +74,13 @@ func resourceEnvVar() *schema.Resource {
 			value := d.Get("value").(string)
 			switch {
 			case publicValue != "" && value == "": // public: true
-				d.SetNew("public", true)
-				d.Clear("value")
+				if err := d.SetNew("public", true); err != nil {
+					return err
+				}
 			case value != "" && publicValue == "": // public: false
-				d.SetNew("public", false)
-				d.Clear("public_value")
+				if err := d.SetNew("public", false); err != nil {
+					return err
+				}
 			}
 			return nil
 		},
@@ -108,7 +110,9 @@ func resourceEnvVarCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	} else {
 		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
-	assignEnvVar(envVar, d)
+	if err := assignEnvVar(envVar, d); err != nil {
+		return diag.Errorf("failed to assign env_var: %v", err)
+	}
 	return nil
 }
 
@@ -139,7 +143,9 @@ func resourceEnvVarRead(ctx context.Context, d *schema.ResourceData, m interface
 	} else {
 		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
-	assignEnvVar(envVar, d)
+	if err := assignEnvVar(envVar, d); err != nil {
+		return diag.Errorf("failed to assign env_var: %v", err)
+	}
 	return nil
 }
 
@@ -182,17 +188,30 @@ func generateEnvVarBody(d *schema.ResourceData) *travis.EnvVarBody {
 	}
 }
 
-func assignEnvVar(envVar *travis.EnvVar, d *schema.ResourceData) {
+func assignEnvVar(envVar *travis.EnvVar, d *schema.ResourceData) error {
 	d.SetId(*envVar.Id)
-	d.Set("name", envVar.Name)
-	if *envVar.Public {
-		d.Set("public_value", envVar.Value)
-		d.Set("value", nil)
-	} else {
-		d.Set("public_value", nil)
+	if err := d.Set("name", envVar.Name); err != nil {
+		return err
 	}
-	d.Set("public", envVar.Public)
-	d.Set("branch", envVar.Branch)
+	if *envVar.Public {
+		if err := d.Set("public_value", envVar.Value); err != nil {
+			return err
+		}
+		if err := d.Set("value", nil); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("public_value", nil); err != nil {
+			return err
+		}
+	}
+	if err := d.Set("public", envVar.Public); err != nil {
+		return err
+	}
+	if err := d.Set("branch", envVar.Branch); err != nil {
+		return err
+	}
+	return nil
 }
 
 func importEnvVar(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
@@ -212,11 +231,17 @@ func importEnvVar(ctx context.Context, d *schema.ResourceData, m interface{}) ([
 
 	for _, envVar := range envVars {
 		if *envVar.Name == name {
-			assignEnvVar(envVar, d)
+			if err := assignEnvVar(envVar, d); err != nil {
+				return nil, err
+			}
 			if repoID, err := strconv.Atoi(repo); err == nil {
-				d.Set("repository_id", repoID)
+				if err := d.Set("repository_id", repoID); err != nil {
+					return nil, err
+				}
 			} else {
-				d.Set("repository_slug", repo)
+				if err := d.Set("repository_slug", repo); err != nil {
+					return nil, err
+				}
 			}
 			return []*schema.ResourceData{d}, nil
 		}

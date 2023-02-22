@@ -1,4 +1,4 @@
-package travis
+package travis_test
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/shuheiktgw/go-travis"
+
+	tptravis "github.com/bgpat/terraform-provider-travis/travis"
 )
 
 func TestAccResourceCron_basic(t *testing.T) {
@@ -22,7 +24,7 @@ func TestAccResourceCron_basic(t *testing.T) {
 			{
 				Config: testAccCronResource(testBranch, "daily", false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCronResourceExists("travis_cron.foo", &cron),
+					testAccCheckCronResourceExists(&cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
 					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "daily"),
@@ -32,7 +34,7 @@ func TestAccResourceCron_basic(t *testing.T) {
 			{
 				Config: testAccCronResource(testBranch, "weekly", false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCronResourceExists("travis_cron.foo", &cron),
+					testAccCheckCronResourceExists(&cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
 					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "weekly"),
@@ -42,7 +44,7 @@ func TestAccResourceCron_basic(t *testing.T) {
 			{
 				Config: testAccCronResource(testBranch, "monthly", false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCronResourceExists("travis_cron.foo", &cron),
+					testAccCheckCronResourceExists(&cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
 					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "monthly"),
@@ -52,7 +54,7 @@ func TestAccResourceCron_basic(t *testing.T) {
 			{
 				Config: testAccCronResource(testBranch, "daily", true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCronResourceExists("travis_cron.foo", &cron),
+					testAccCheckCronResourceExists(&cron),
 					resource.TestCheckResourceAttr("travis_cron.foo", "repository_slug", testRepoSlug),
 					resource.TestCheckResourceAttr("travis_cron.foo", "branch", testBranch),
 					resource.TestCheckResourceAttr("travis_cron.foo", "interval", "daily"),
@@ -64,7 +66,7 @@ func TestAccResourceCron_basic(t *testing.T) {
 }
 
 func testAccCheckCronResourceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
+	client := testAccProvider.Meta().(*tptravis.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "travis_cron" {
 			continue
@@ -77,7 +79,7 @@ func testAccCheckCronResourceDestroy(s *terraform.State) error {
 		if err == nil && cron != nil {
 			return fmt.Errorf("cron %v still exists", rs.Primary.ID)
 		}
-		if err != nil && !isNotFound(err) {
+		if err != nil && !tptravis.IsNotFound(err) {
 			return err
 		}
 		return nil
@@ -85,7 +87,8 @@ func testAccCheckCronResourceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCronResourceExists(resourceName string, cron *travis.Cron) resource.TestCheckFunc {
+func testAccCheckCronResourceExists(cron *travis.Cron) resource.TestCheckFunc {
+	resourceName := "travis_cron.foo"
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -94,7 +97,7 @@ func testAccCheckCronResourceExists(resourceName string, cron *travis.Cron) reso
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("cron ID is not set")
 		}
-		client := testAccProvider.Meta().(*Client)
+		client := testAccProvider.Meta().(*tptravis.Client)
 		id, err := strconv.ParseUint(rs.Primary.ID, 10, 64)
 		if err != nil {
 			return err

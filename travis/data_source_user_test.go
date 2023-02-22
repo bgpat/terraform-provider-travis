@@ -1,7 +1,6 @@
-package travis
+package travis_test
 
 import (
-	_ "embed"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"

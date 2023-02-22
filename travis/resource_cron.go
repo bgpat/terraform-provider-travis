@@ -21,58 +21,58 @@ func resourceCron() *schema.Resource {
 		DeleteContext: resourceCronDelete,
 
 		Schema: map[string]*schema.Schema{
-			"repository_id": &schema.Schema{
+			"repository_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Description:  "Value uniquely identifying the repository.",
 				ForceNew:     true,
 				ExactlyOneOf: []string{"repository_slug"},
 			},
-			"repository_slug": &schema.Schema{
+			"repository_slug": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Same as {repository.owner.name}/{repository.name}.",
 				ForceNew:     true,
 				ExactlyOneOf: []string{"repository_id"},
 			},
-			"branch": &schema.Schema{
+			"branch": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The branch to which this cron job belongs.",
 				ForceNew:    true,
 			},
-			"interval": &schema.Schema{
+			"interval": {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Interval at which this cron runs. Can be daily, weekly, or monthly.",
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"daily", "weekly", "monthly"}, false),
 			},
-			"dont_run_if_recent_build_exists": &schema.Schema{
+			"dont_run_if_recent_build_exists": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Whether a cron build should run if there has been a build on this branch in the last 24 hours.",
 				ForceNew:    true,
 			},
-			"last_run": &schema.Schema{
+			"last_run": {
 				Type:        schema.TypeString,
 				Description: "When the cron ran last.",
 				Computed:    true,
 				ForceNew:    true,
 			},
-			"next_run": &schema.Schema{
+			"next_run": {
 				Type:        schema.TypeString,
 				Description: "When the cron is scheduled to run next.",
 				Computed:    true,
 				ForceNew:    true,
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Description: "When the cron was created.",
 				Computed:    true,
 				ForceNew:    true,
 			},
-			"active": &schema.Schema{
+			"active": {
 				Type:        schema.TypeBool,
 				Description: "Whether the cron is active.",
 				Computed:    true,
@@ -105,7 +105,9 @@ func resourceCronCreate(ctx context.Context, d *schema.ResourceData, m interface
 	} else {
 		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
-	assignCron(cron, d)
+	if err := assignCron(cron, d); err != nil {
+		return diag.Errorf("failed to assign cron: %v", err)
+	}
 	return nil
 }
 
@@ -136,7 +138,9 @@ func resourceCronRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	} else {
 		return diag.Errorf("one of repository_id or repository_slug must be specified")
 	}
-	assignCron(cron, d)
+	if err := assignCron(cron, d); err != nil {
+		return diag.Errorf("failed to assign cron: %v", err)
+	}
 	return nil
 }
 
@@ -162,15 +166,30 @@ func generateCronBody(d *schema.ResourceData) *travis.CronBody {
 	}
 }
 
-func assignCron(cron *travis.Cron, d *schema.ResourceData) {
+func assignCron(cron *travis.Cron, d *schema.ResourceData) error {
 	d.SetId(strconv.FormatUint(uint64(*cron.Id), 10))
-	d.Set("branch", cron.Branch.Name)
-	d.Set("interval", cron.Interval)
-	d.Set("dont_run_if_recent_build_exists", cron.DontRunIfRecentBuildExists)
-	d.Set("last_run", cron.LastRun)
-	d.Set("next_run", cron.NextRun)
-	d.Set("created_at", cron.CreatedAt)
-	d.Set("active", cron.Active)
+	if err := d.Set("branch", cron.Branch.Name); err != nil {
+		return err
+	}
+	if err := d.Set("interval", cron.Interval); err != nil {
+		return err
+	}
+	if err := d.Set("dont_run_if_recent_build_exists", cron.DontRunIfRecentBuildExists); err != nil {
+		return err
+	}
+	if err := d.Set("last_run", cron.LastRun); err != nil {
+		return err
+	}
+	if err := d.Set("next_run", cron.NextRun); err != nil {
+		return err
+	}
+	if err := d.Set("created_at", cron.CreatedAt); err != nil {
+		return err
+	}
+	if err := d.Set("active", cron.Active); err != nil {
+		return err
+	}
+	return nil
 }
 
 func importCron(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
@@ -189,16 +208,22 @@ func importCron(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*
 		if err != nil {
 			return nil, fmt.Errorf("error getting cron in branch (%q) of repo id (%d): %w", branch, repoID, err)
 		}
-		d.Set("repository_id", repoID)
+		if err := d.Set("repository_id", repoID); err != nil {
+			return nil, err
+		}
 	} else {
 		cron, _, err = client.Crons.FindByRepoSlug(ctx, repo, branch, nil)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cron in branch (%q) of repo slug (%q): %w", branch, repo, err)
 		}
-		d.Set("repository_slug", repo)
+		if err := d.Set("repository_slug", repo); err != nil {
+			return nil, err
+		}
 	}
 
-	assignCron(cron, d)
+	if err := assignCron(cron, d); err != nil {
+		return nil, err
+	}
 
 	return []*schema.ResourceData{d}, nil
 }

@@ -1,10 +1,11 @@
-package travis
+package travis_test
 
 import (
 	"os"
 	"regexp"
 	"testing"
 
+	"github.com/bgpat/terraform-provider-travis/travis"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -21,23 +22,25 @@ var (
 )
 
 func init() {
-	testAccProvider = Provider()
+	testAccProvider = travis.Provider()
 	testAccProviders = map[string]*schema.Provider{
 		"travis": testAccProvider,
 	}
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().InternalValidate(); err != nil {
+	if err := travis.Provider().InternalValidate(); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestProvider_impl(t *testing.T) {
-	var _ *schema.Provider = Provider()
+	var _ *schema.Provider = travis.Provider()
 }
 
 func testAccPreCheck(t *testing.T) {
+	t.Helper()
+
 	if v := os.Getenv("TRAVIS_TOKEN"); v == "" {
 		t.Fatal("TRAVIS_TOKEN must be set for acceptance tests")
 	}
