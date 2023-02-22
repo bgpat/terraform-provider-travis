@@ -77,14 +77,14 @@ func resourceEnvVar() *schema.Resource {
 				if err := d.SetNew("public", true); err != nil {
 					return err
 				}
-				if err := d.Clear("value"); err != nil {
+				if err := d.SetNew("value", nil); err != nil {
 					return err
 				}
 			case value != "" && publicValue == "": // public: false
 				if err := d.SetNew("public", false); err != nil {
 					return err
 				}
-				if err := d.Clear("public_value"); err != nil {
+				if err := d.SetNew("public_value", nil); err != nil {
 					return err
 				}
 			}
