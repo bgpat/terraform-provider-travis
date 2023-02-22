@@ -97,7 +97,7 @@ func testAccCheckCronResourceExists(cron *travis.Cron) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("cron ID is not set")
 		}
-		client := testAccProvider.Meta().(*travis.Client)
+		client := testAccProvider.Meta().(*tptravis.Client)
 		id, err := strconv.ParseUint(rs.Primary.ID, 10, 64)
 		if err != nil {
 			return err
