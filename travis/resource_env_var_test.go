@@ -74,7 +74,7 @@ func TestAccResourceEnvVar_basic(t *testing.T) {
 }
 
 func testAccCheckEnvVarResourceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*travis.Client)
+	client := testAccProvider.Meta().(*tptravis.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "travis_env_var" {
 			continue
@@ -101,7 +101,7 @@ func testAccCheckEnvVarResourceExists(resourceName string, envVar *travis.EnvVar
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("env var ID is not set")
 		}
-		client := testAccProvider.Meta().(*travis.Client)
+		client := testAccProvider.Meta().(*tptravis.Client)
 		result, _, err := client.EnvVars.FindByRepoSlug(context.Background(), testRepoSlug, rs.Primary.ID)
 		if err != nil {
 			return err
