@@ -20,34 +20,34 @@ func resourceEnvVar() *schema.Resource {
 		DeleteContext: resourceEnvVarDelete,
 
 		Schema: map[string]*schema.Schema{
-			"repository_id": &schema.Schema{
+			"repository_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Description:  "Value uniquely identifying the repository.",
 				ForceNew:     true,
 				ExactlyOneOf: []string{"repository_slug"},
 			},
-			"repository_slug": &schema.Schema{
+			"repository_slug": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Same as {repository.owner.name}/{repository.name}.",
 				ForceNew:     true,
 				ExactlyOneOf: []string{"repository_id"},
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The environment variable name, e.g. FOO.",
 				ForceNew:    true,
 			},
-			"public_value": &schema.Schema{
+			"public_value": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The environment variable's value, e.g. bar.",
 				ExactlyOneOf: []string{"value"},
 				ForceNew:     true,
 			},
-			"value": &schema.Schema{
+			"value": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The environment variable's value, e.g. bar.",
@@ -55,13 +55,13 @@ func resourceEnvVar() *schema.Resource {
 				ExactlyOneOf: []string{"public_value"},
 				ForceNew:     true,
 			},
-			"public": &schema.Schema{
+			"public": {
 				Type:        schema.TypeBool,
 				Description: "Whether this environment variable should be publicly visible or not.",
 				Computed:    true,
 				ForceNew:    true,
 			},
-			"branch": &schema.Schema{
+			"branch": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The env_var's branch.",
@@ -77,14 +77,8 @@ func resourceEnvVar() *schema.Resource {
 				if err := d.SetNew("public", true); err != nil {
 					return err
 				}
-				if err := d.SetNew("value", nil); err != nil {
-					return err
-				}
 			case value != "" && publicValue == "": // public: false
 				if err := d.SetNew("public", false); err != nil {
-					return err
-				}
-				if err := d.SetNew("public_value", nil); err != nil {
 					return err
 				}
 			}
