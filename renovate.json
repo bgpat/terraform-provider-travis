@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "postUpdateOptions": [
     "gomodTidy",
@@ -9,11 +9,8 @@
   "packageRules": [
     {
       "matchManagers": ["gomod"],
-      "matchPackageNames": [
-        "golang.org/x/crypto"
-      ],
-      "matchUpdateTypes": ["digest"],
       "automerge": true,
+      "platformAutomerge": true,
       "labels": ["dependencies"]
     }
   ]
