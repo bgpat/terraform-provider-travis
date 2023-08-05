@@ -13,7 +13,8 @@
         "golang.org/x/crypto"
       ],
       "matchUpdateTypes": ["digest"],
-      "automerge": true
+      "automerge": true,
+      "labels": ["dependencies"]
     }
   ]
 }
