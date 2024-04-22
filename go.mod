@@ -6,7 +6,7 @@ toolchain go1.22.2
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/hashicorp/terraform-plugin-docs v0.19.0
+	github.com/hashicorp/terraform-plugin-docs v0.19.1
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
 	github.com/shuheiktgw/go-travis v0.3.1
