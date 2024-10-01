@@ -2,7 +2,7 @@ module github.com/bgpat/terraform-provider-travis
 
 go 1.21
 
-toolchain go1.23.1
+toolchain go1.23.2
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0
