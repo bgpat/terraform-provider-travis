@@ -1,11 +1,11 @@
 module github.com/bgpat/terraform-provider-travis
 
-go 1.22.7
+go 1.23
 
 toolchain go1.23.5
 
 require (
-	github.com/cenkalti/backoff/v4 v4.3.0
+	github.com/cenkalti/backoff/v5 v5.0.1
 	github.com/hashicorp/terraform-plugin-docs v0.20.1
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
