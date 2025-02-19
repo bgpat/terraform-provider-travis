@@ -8,7 +8,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/hashicorp/terraform-plugin-docs v0.20.1
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/shuheiktgw/go-travis v0.3.1
 	golang.org/x/crypto v0.33.0
 )
