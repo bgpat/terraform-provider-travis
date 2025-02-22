@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -156,27 +156,31 @@ func dataSourceTravisRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	eb := backoff.NewExponentialBackOff()
 	eb.InitialInterval = syncInitialInterval
-	if err := backoff.RetryNotify(func() error {
+	user, err := backoff.Retry(ctx, func() (*travis.User, error) {
 		user, _, err := client.User.Find(ctx, userID, opt)
 		if err != nil {
-			return backoff.Permanent(err)
+			return nil, backoff.Permanent(err)
 		}
 		if user == nil {
-			return errors.New("user is nil")
+			return nil, errors.New("user is nil")
 		}
 		if waitSync {
 			if user.IsSyncing != nil && *user.IsSyncing {
-				return errors.New("syncing user")
+				return nil, errors.New("syncing user")
 			}
 		}
-		return assignUser(user, d)
-	}, backoff.WithContext(eb, ctx), func(err error, d time.Duration) {
+		return user, nil
+	}, backoff.WithBackOff(eb), backoff.WithNotify(func(err error, d time.Duration) {
 		tflog.Debug(ctx, "retry to get user", map[string]interface{}{
 			"reason": err,
 			"sleep":  d,
 		})
-	}); err != nil {
+	}))
+	if err != nil {
 		return diag.Errorf("failed to get user %v: %v", userID, err)
+	}
+	if err := assignUser(user, d); err != nil {
+		return diag.Errorf("failed to set user: %v", err)
 	}
 	return nil
 }
