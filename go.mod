@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/shuheiktgw/go-travis v0.3.1
-	golang.org/x/crypto v0.34.0
+	golang.org/x/crypto v0.35.0
 )
 
 require (
