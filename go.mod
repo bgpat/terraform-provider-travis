@@ -7,7 +7,7 @@ toolchain go1.25.4
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
-	github.com/hashicorp/terraform-plugin-log v0.9.0
+	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/shuheiktgw/go-travis v0.3.1
 	golang.org/x/crypto v0.44.0
