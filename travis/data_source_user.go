@@ -149,7 +149,8 @@ func dataSourceTravisRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if waitSync {
 		_, _, err := client.User.Sync(ctx, userID)
-		if err != nil {
+		// 409 already_syncing means a sync is already in progress; wait for it.
+		if err != nil && !isAlreadySyncing(err) {
 			return diag.Errorf("failed to sync user %v: %v", userID, err)
 		}
 	}
