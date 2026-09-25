@@ -44,3 +44,8 @@ func isNotFound(err error) bool {
 	var errResp *travis.ErrorResponse
 	return errors.As(err, &errResp) && errResp.ErrorType == "not_found"
 }
+
+func isAlreadySyncing(err error) bool {
+	var errResp *travis.ErrorResponse
+	return errors.As(err, &errResp) && errResp.ErrorType == "already_syncing"
+}
