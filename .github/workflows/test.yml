@@ -11,7 +11,7 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - run: go test ./...
+      - run: go test -p 1 -timeout 20m ./...
         env:
           TF_ACC: "true"
           TRAVIS_TOKEN: ${{ secrets.TRAVIS_TOKEN }}
