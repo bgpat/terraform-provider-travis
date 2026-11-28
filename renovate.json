@@ -10,8 +10,5 @@
     "gomodUpdateImportPaths"
   ],
   "automerge": true,
-  "platformAutomerge": true,
-  "major": {
-    "automerge": false
-  }
+  "platformAutomerge": true
 }
