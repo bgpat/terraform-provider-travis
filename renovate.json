@@ -1,4 +1,5 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
   ],
@@ -8,7 +9,18 @@
   ],
   "packageRules": [
     {
+      "description": "Go major updates: separate PR per dependency",
       "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["gomod-major"]
+    },
+    {
+      "description": "Group Go minor and patch updates",
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "go minor/patch",
+      "groupSlug": "go-minor-patch",
       "automerge": true,
       "platformAutomerge": true,
       "labels": ["dependencies"]
