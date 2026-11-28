@@ -3,7 +3,7 @@
   "extends": [
     "config:recommended",
     ":separateMultipleMajorReleases",
-    "group:allNonMajor"
+    ":separatePatchReleases"
   ],
   "postUpdateOptions": [
     "gomodTidy",
